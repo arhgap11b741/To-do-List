@@ -5,8 +5,9 @@ import DoneIcon from "@/components/DoneIcon";
 import TodoIcon from "@/components/TodoIcon";
 import TodoInput from "@/components/TodoInput";
 import TodoTab from "@/components/TodoTab";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { getTodos, createTodo, updateTodo, TodoItem as ApiTodoItem } from "@/lib/api";
 
 interface TodoItem {
   id: string;
@@ -16,22 +17,71 @@ interface TodoItem {
 
 export default function Home() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAddTodo = (text: string) => {
-    const newTodo: TodoItem = {
-      id: Date.now().toString(),
-      text,
-      completed: false,
-    };
-    setTodos([...todos, newTodo]);
+  // 초기 데이터 로드
+  useEffect(() => {
+    loadTodos();
+  }, []);
+
+  const loadTodos = async () => {
+    try {
+      setIsLoading(true);
+      const apiTodos = await getTodos();
+      const mappedTodos = apiTodos.map((todo) => ({
+        id: todo.id.toString(),
+        text: todo.name,
+        completed: todo.isCompleted,
+      }));
+      setTodos(mappedTodos);
+    } catch (error) {
+      console.error("할 일 목록 로드 실패:", error);
+      alert("할 일 목록을 불러오는데 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleToggleTodo = (id: string, isCompleted: boolean) => {
-    setTodos(todos.map((todo) => (todo.id === id ? { ...todo, completed: isCompleted } : todo)));
+  const handleAddTodo = async (text: string) => {
+    try {
+      const newTodo = await createTodo({ name: text });
+      setTodos([
+        ...todos,
+        {
+          id: newTodo.id.toString(),
+          text: newTodo.name,
+          completed: newTodo.isCompleted,
+        },
+      ]);
+    } catch (error) {
+      console.error("할 일 추가 실패:", error);
+      alert("할 일을 추가하는데 실패했습니다.");
+    }
+  };
+
+  const handleToggleTodo = async (id: string, isCompleted: boolean) => {
+    try {
+      await updateTodo(id, { isCompleted });
+      setTodos(todos.map((todo) => (todo.id === id ? { ...todo, completed: isCompleted } : todo)));
+    } catch (error) {
+      console.error("할 일 상태 변경 실패:", error);
+      alert("할 일 상태를 변경하는데 실패했습니다.");
+    }
   };
 
   const incompleteTodos = todos.filter((todo) => !todo.completed);
   const completedTodos = todos.filter((todo) => todo.completed);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">할 일 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 py-6 md:py-12">
