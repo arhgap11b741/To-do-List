@@ -1,6 +1,5 @@
 "use client";
 
-import AddButton from "@/components/AddButton";
 import DoneIcon from "@/components/DoneIcon";
 import TodoIcon from "@/components/TodoIcon";
 import TodoInput from "@/components/TodoInput";
