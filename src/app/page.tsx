@@ -6,7 +6,7 @@ import TodoInput from "@/components/TodoInput";
 import TodoTab from "@/components/TodoTab";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getTodos, createTodo, updateTodo, TodoItem as ApiTodoItem } from "@/lib/api";
+import { getTodos, createTodo, updateTodo } from "@/lib/api";
 
 interface TodoItem {
   id: string;
