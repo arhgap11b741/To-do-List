@@ -1,0 +1,39 @@
+echo "🔍 Pre-commit 체크를 시작합니다..."
+
+# 1. ESLint 체크
+echo "📝 ESLint 체크 중..."
+npm run lint
+if [ $? -ne 0 ]; then
+    echo "❌ ESLint 오류가 발견되었습니다. 커밋이 취소됩니다."
+    exit 1
+fi
+echo "✅ ESLint 체크 통과"
+
+# 2. Prettier 포맷 체크
+echo "🎨 Prettier 포맷 체크 중..."
+npm run format:check
+if [ $? -ne 0 ]; then
+    echo "❌ 코드 포맷이 올바르지 않습니다. 'npm run format'을 실행하여 포맷을 수정하세요."
+    exit 1
+fi
+echo "✅ Prettier 포맷 체크 통과"
+
+# 3. TypeScript 타입 체크
+echo "🔧 TypeScript 타입 체크 중..."
+npm run type-check
+if [ $? -ne 0 ]; then
+    echo "❌ TypeScript 타입 오류가 발견되었습니다. 커밋이 취소됩니다."
+    exit 1
+fi
+echo "✅ TypeScript 타입 체크 통과"
+
+# 4. Next.js 빌드 체크
+echo "🏗️  Next.js 빌드 체크 중..."
+npm run build
+if [ $? -ne 0 ]; then
+    echo "❌ 빌드 오류가 발견되었습니다. 커밋이 취소됩니다."
+    exit 1
+fi
+echo "✅ Next.js 빌드 체크 통과"
+
+echo "🎉 모든 체크가 완료되었습니다. 커밋을 진행합니다."

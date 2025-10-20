@@ -1,13 +1,12 @@
 "use client";
 
-import AddButton from "@/components/AddButton";
 import DoneIcon from "@/components/DoneIcon";
 import TodoIcon from "@/components/TodoIcon";
 import TodoInput from "@/components/TodoInput";
 import TodoTab from "@/components/TodoTab";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getTodos, createTodo, updateTodo, TodoItem as ApiTodoItem } from "@/lib/api";
+import { getTodos, createTodo, updateTodo } from "@/lib/api";
 
 interface TodoItem {
   id: string;
