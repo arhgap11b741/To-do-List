@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- 배경 원 -->
+  <circle cx="256" cy="256" r="256" fill="#7c3aed"/>
+  
+  <!-- 체크마크 -->
+  <path 
+    d="M144 268 L216 340 L368 188" 
+    stroke="white" 
+    stroke-width="48" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>
+

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <!-- 배경 (약간의 여백 포함) -->
+  <rect width="180" height="180" fill="white"/>
+  <circle cx="90" cy="90" r="70" fill="#7c3aed"/>
+  
+  <!-- 체크마크 -->
+  <path 
+    d="M63 92 L81.5 110.5 L117 75" 
+    stroke="white" 
+    stroke-width="10" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>
+

@@ -1,0 +1,17 @@
+{
+  "name": "do it; 할일 관리 앱",
+  "short_name": "do it",
+  "description": "할 일을 체계적으로 관리하는 Todo List 애플리케이션",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
