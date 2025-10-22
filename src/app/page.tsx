@@ -6,7 +6,7 @@ import TodoInput from "@/components/TodoInput";
 import TodoTab from "@/components/TodoTab";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getTodos, createTodo, updateTodo } from "@/lib/api";
+import { getTodos, createTodo, updateTodo, TodoItem as ApiTodoItem } from "@/lib/api";
 
 interface TodoItem {
   id: string;
@@ -20,18 +20,43 @@ export default function Home() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    loadTodos();
+    loadAllTodos();
   }, []);
 
-  const loadTodos = async () => {
+  const loadAllTodos = async () => {
     try {
       setIsLoading(true);
-      const apiTodos = await getTodos();
-      const mappedTodos = apiTodos.map((todo) => ({
+
+      // 모든 페이지의 데이터를 순차적으로 가져오기
+      const allTodos: ApiTodoItem[] = [];
+      let currentPage = 1;
+      let hasMorePages = true;
+
+      while (hasMorePages) {
+        const pageData = await getTodos(currentPage, 20);
+
+        if (pageData.length === 0 || pageData.length < 20) {
+          hasMorePages = false;
+        }
+
+        allTodos.push(...pageData);
+        currentPage++;
+
+        // 무한 루프 방지
+        if (currentPage > 100) {
+          console.warn("최대 페이지 수에 도달했습니다.");
+          break;
+        }
+      }
+
+      console.log(`총 ${allTodos.length}개의 할일을 ${currentPage - 1}페이지에서 가져왔습니다.`);
+
+      const mappedTodos = allTodos.map((todo) => ({
         id: todo.id.toString(),
         text: todo.name,
         completed: todo.isCompleted,
       }));
+
       setTodos(mappedTodos);
     } catch (error) {
       console.error("할 일 목록 로드 실패:", error);
@@ -68,6 +93,7 @@ export default function Home() {
     }
   };
 
+  // TO DO와 DONE을 분리
   const incompleteTodos = todos.filter((todo) => !todo.completed);
   const completedTodos = todos.filter((todo) => todo.completed);
 

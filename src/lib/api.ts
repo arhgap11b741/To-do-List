@@ -22,8 +22,8 @@ export interface UpdateTodoRequest {
 }
 
 // 할 일 목록 조회
-export async function getTodos(): Promise<TodoItem[]> {
-  const response = await fetch(`${BASE_URL}/${TENANT_ID}/items`, {
+export async function getTodos(page: number, pageSize: number): Promise<TodoItem[]> {
+  const response = await fetch(`${BASE_URL}/${TENANT_ID}/items?page=${page}&pageSize=${pageSize}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
