@@ -18,13 +18,9 @@ export default function Home() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // TO DO 섹션 페이지네이션
-  const [todoCurrentPage, setTodoCurrentPage] = useState(1);
-  const [todoPageSize] = useState(10);
-
-  // DONE 섹션 페이지네이션
-  const [doneCurrentPage, setDoneCurrentPage] = useState(1);
-  const [donePageSize] = useState(10);
+  // 균등 페이지네이션
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sectionPageSize] = useState(10); // 각 섹션당 10개씩
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -101,22 +97,28 @@ export default function Home() {
     }
   };
 
-  // TO DO와 DONE을 분리
-  const allIncompleteTodos = todos.filter((todo) => !todo.completed);
-  const allCompletedTodos = todos.filter((todo) => todo.completed);
+  // TO DO와 DONE을 분리하고 정렬
+  const allIncompleteTodos = todos
+    .filter((todo) => !todo.completed)
+    .sort((a, b) => parseInt(b.id) - parseInt(a.id));
+  const allCompletedTodos = todos
+    .filter((todo) => todo.completed)
+    .sort((a, b) => parseInt(b.id) - parseInt(a.id));
 
-  // 페이지네이션된 데이터
-  const startTodoIndex = (todoCurrentPage - 1) * todoPageSize;
-  const endTodoIndex = startTodoIndex + todoPageSize;
-  const incompleteTodos = allIncompleteTodos.slice(startTodoIndex, endTodoIndex);
+  // 현재 페이지의 TO DO (각 페이지당 10개)
+  const todoStartIndex = (currentPage - 1) * sectionPageSize;
+  const todoEndIndex = todoStartIndex + sectionPageSize;
+  const incompleteTodos = allIncompleteTodos.slice(todoStartIndex, todoEndIndex);
 
-  const startDoneIndex = (doneCurrentPage - 1) * donePageSize;
-  const endDoneIndex = startDoneIndex + donePageSize;
-  const completedTodos = allCompletedTodos.slice(startDoneIndex, endDoneIndex);
+  // 현재 페이지의 DONE (각 페이지당 10개)
+  const doneStartIndex = (currentPage - 1) * sectionPageSize;
+  const doneEndIndex = doneStartIndex + sectionPageSize;
+  const completedTodos = allCompletedTodos.slice(doneStartIndex, doneEndIndex);
 
-  // 페이지네이션 정보
-  const totalTodoPages = Math.ceil(allIncompleteTodos.length / todoPageSize);
-  const totalDonePages = Math.ceil(allCompletedTodos.length / donePageSize);
+  // 총 페이지 수 (TO DO와 DONE 중 더 많은 쪽 기준)
+  const totalTodoPages = Math.ceil(allIncompleteTodos.length / sectionPageSize);
+  const totalDonePages = Math.ceil(allCompletedTodos.length / sectionPageSize);
+  const totalPages = Math.max(totalTodoPages, totalDonePages);
 
   if (isLoading) {
     return (
@@ -177,39 +179,6 @@ export default function Home() {
               ))
             )}
           </div>
-
-          {/* TO DO 섹션 페이지네이션 */}
-          {allIncompleteTodos.length > todoPageSize && (
-            <div className="flex justify-center items-center gap-2 mt-4">
-              <button
-                onClick={() => setTodoCurrentPage(todoCurrentPage - 1)}
-                disabled={todoCurrentPage === 1}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  todoCurrentPage === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-violet-100 text-violet-700 hover:bg-violet-200"
-                }`}
-              >
-                이전
-              </button>
-
-              <span className="text-slate-600 text-sm">
-                {todoCurrentPage} / {totalTodoPages}
-              </span>
-
-              <button
-                onClick={() => setTodoCurrentPage(todoCurrentPage + 1)}
-                disabled={todoCurrentPage === totalTodoPages}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  todoCurrentPage === totalTodoPages
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-violet-100 text-violet-700 hover:bg-violet-200"
-                }`}
-              >
-                다음
-              </button>
-            </div>
-          )}
         </div>
 
         {/* DONE 섹션 */}
@@ -250,41 +219,41 @@ export default function Home() {
               ))
             )}
           </div>
-
-          {/* DONE 섹션 페이지네이션 */}
-          {allCompletedTodos.length > donePageSize && (
-            <div className="flex justify-center items-center gap-2 mt-4">
-              <button
-                onClick={() => setDoneCurrentPage(doneCurrentPage - 1)}
-                disabled={doneCurrentPage === 1}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  doneCurrentPage === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-violet-100 text-violet-700 hover:bg-violet-200"
-                }`}
-              >
-                이전
-              </button>
-
-              <span className="text-slate-600 text-sm">
-                {doneCurrentPage} / {totalDonePages}
-              </span>
-
-              <button
-                onClick={() => setDoneCurrentPage(doneCurrentPage + 1)}
-                disabled={doneCurrentPage === totalDonePages}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  doneCurrentPage === totalDonePages
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-violet-100 text-violet-700 hover:bg-violet-200"
-                }`}
-              >
-                다음
-              </button>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* 균등 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8">
+          <button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              currentPage === 1
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-violet-100 text-violet-700 hover:bg-violet-200"
+            }`}
+          >
+            이전
+          </button>
+
+          <span className="text-slate-600 font-medium">
+            페이지 {currentPage} / {totalPages}
+          </span>
+
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              currentPage === totalPages
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-violet-100 text-violet-700 hover:bg-violet-200"
+            }`}
+          >
+            다음
+          </button>
+        </div>
+      )}
     </div>
   );
 }
