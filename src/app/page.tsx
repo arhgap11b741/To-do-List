@@ -18,6 +18,14 @@ export default function Home() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // TO DO 섹션 페이지네이션
+  const [todoCurrentPage, setTodoCurrentPage] = useState(1);
+  const [todoPageSize] = useState(10);
+
+  // DONE 섹션 페이지네이션
+  const [doneCurrentPage, setDoneCurrentPage] = useState(1);
+  const [donePageSize] = useState(10);
+
   // 초기 데이터 로드
   useEffect(() => {
     loadAllTodos();
@@ -94,8 +102,21 @@ export default function Home() {
   };
 
   // TO DO와 DONE을 분리
-  const incompleteTodos = todos.filter((todo) => !todo.completed);
-  const completedTodos = todos.filter((todo) => todo.completed);
+  const allIncompleteTodos = todos.filter((todo) => !todo.completed);
+  const allCompletedTodos = todos.filter((todo) => todo.completed);
+
+  // 페이지네이션된 데이터
+  const startTodoIndex = (todoCurrentPage - 1) * todoPageSize;
+  const endTodoIndex = startTodoIndex + todoPageSize;
+  const incompleteTodos = allIncompleteTodos.slice(startTodoIndex, endTodoIndex);
+
+  const startDoneIndex = (doneCurrentPage - 1) * donePageSize;
+  const endDoneIndex = startDoneIndex + donePageSize;
+  const completedTodos = allCompletedTodos.slice(startDoneIndex, endDoneIndex);
+
+  // 페이지네이션 정보
+  const totalTodoPages = Math.ceil(allIncompleteTodos.length / todoPageSize);
+  const totalDonePages = Math.ceil(allCompletedTodos.length / donePageSize);
 
   if (isLoading) {
     return (
@@ -156,6 +177,39 @@ export default function Home() {
               ))
             )}
           </div>
+
+          {/* TO DO 섹션 페이지네이션 */}
+          {allIncompleteTodos.length > todoPageSize && (
+            <div className="flex justify-center items-center gap-2 mt-4">
+              <button
+                onClick={() => setTodoCurrentPage(todoCurrentPage - 1)}
+                disabled={todoCurrentPage === 1}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  todoCurrentPage === 1
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-violet-100 text-violet-700 hover:bg-violet-200"
+                }`}
+              >
+                이전
+              </button>
+
+              <span className="text-slate-600 text-sm">
+                {todoCurrentPage} / {totalTodoPages}
+              </span>
+
+              <button
+                onClick={() => setTodoCurrentPage(todoCurrentPage + 1)}
+                disabled={todoCurrentPage === totalTodoPages}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  todoCurrentPage === totalTodoPages
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-violet-100 text-violet-700 hover:bg-violet-200"
+                }`}
+              >
+                다음
+              </button>
+            </div>
+          )}
         </div>
 
         {/* DONE 섹션 */}
@@ -196,6 +250,39 @@ export default function Home() {
               ))
             )}
           </div>
+
+          {/* DONE 섹션 페이지네이션 */}
+          {allCompletedTodos.length > donePageSize && (
+            <div className="flex justify-center items-center gap-2 mt-4">
+              <button
+                onClick={() => setDoneCurrentPage(doneCurrentPage - 1)}
+                disabled={doneCurrentPage === 1}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  doneCurrentPage === 1
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-violet-100 text-violet-700 hover:bg-violet-200"
+                }`}
+              >
+                이전
+              </button>
+
+              <span className="text-slate-600 text-sm">
+                {doneCurrentPage} / {totalDonePages}
+              </span>
+
+              <button
+                onClick={() => setDoneCurrentPage(doneCurrentPage + 1)}
+                disabled={doneCurrentPage === totalDonePages}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  doneCurrentPage === totalDonePages
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-violet-100 text-violet-700 hover:bg-violet-200"
+                }`}
+              >
+                다음
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
