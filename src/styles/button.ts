@@ -1,8 +1,11 @@
 // 공통 버튼 스타일 상수들
 export const BUTTON_BASE_CLASSES = `
-  flex items-center gap-2 px-6 py-3 rounded-2xl
+  flex items-center justify-center gap-2 
+  px-4 py-2 sm:px-6 sm:py-3 
+  rounded-2xl
   font-semibold transition-colors duration-200
   focus:outline-none focus:ring-2
+  w-full sm:w-auto
 `;
 
 // 완료/성공 버튼 스타일

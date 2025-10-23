@@ -17,7 +17,7 @@ export default function ActionButtons({
   className = "",
 }: ActionButtonsProps) {
   return (
-    <div className={`flex gap-3 ${className}`}>
+    <div className={`flex flex-col sm:flex-row gap-3 ${className}`}>
       {/* 수정 완료 버튼 */}
       <button
         onClick={onEditComplete}
