@@ -131,7 +131,7 @@ export default function TodoDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 md:p-12 my-6 md:my-12">
+    <div className="bg-white rounded-xl p-6 md:p-12">
       {/* 헤더 */}
       <div className="flex items-center gap-3 mb-8">
         <button
@@ -226,7 +226,7 @@ export default function TodoDetailPage({ params }: { params: Promise<{ id: strin
                           className="brightness-0 opacity-50"
                         />
                       </div>
-                      <p className="text-slate-500 text-center">
+                      <p className="text-slate-500 text-center text-sm">
                         이미지를 추가하려면
                         <br />
                         여기를 클릭하세요

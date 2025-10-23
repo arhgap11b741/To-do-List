@@ -1,6 +1,9 @@
 # Todo List Application
 
-> Next.js 15 App Router와 TypeScript를 활용한 현대적인 Todo 관리 애플리케이션
+> Next.js 15 App Router와 TypeScript를 활용한 Todo 관리 애플리케이션
+
+> 이 문서는 **개발 과정에서의 고민, 트레이드오프, 그리고 학습한 내용을 포함한 회고록**입니다.
+> This document is a **memoir including the struggles, tradeoffs, and lessons learned during the development process**.
 
 ## 목차
 
@@ -11,17 +14,19 @@
 - [성능 최적화](#성능-최적화)
 - [개발 경험 개선](#개발-경험-개선)
 - [트레이드오프와 개선 방향](#트레이드오프와-개선-방향)
+- [학습 및 회고](#학습-및-회고) - 개발 과정에서의 고민과 배운 점
 
 ---
 
 ## 프로젝트 개요
 
-이 프로젝트는 단순한 Todo 앱을 넘어, **현대적인 웹 개발 패러다임과 베스트 프랙티스를 적용한 실무 수준의 프론트엔드 애플리케이션**입니다. RESTful API 연동, 상태 관리, 에러 핸들링, 사용자 경험 최적화 등 실제 프로덕션 환경에서 고려해야 할 요소들을 구현했습니다.
+**실무 수준의 프론트엔드 애플리케이션**입니다. RESTful API 연동, 상태 관리, 에러 핸들링, 사용자 경험 최적화 등 실제 프로덕션 환경에서 고려해야 할 요소들을 구현했습니다.
 
 ### 핵심 기능
 
 - 할 일 생성, 조회, 수정, 삭제 (CRUD)
 - 완료/미완료 상태 관리 및 자동 분류
+- **통합 페이지네이션**: TO DO와 DONE 섹션을 동시에 탐색
 - 상세 페이지를 통한 메모 추가 및 편집
 - 반응형 UI (모바일 우선 설계)
 - 낙관적 업데이트(Optimistic Update)를 통한 즉각적인 사용자 피드백
@@ -141,7 +146,7 @@ src/
 #### 1. **관심사의 분리 (Separation of Concerns)**
 
 ```typescript
-// ❌ 나쁜 예: 컴포넌트에 API 로직 직접 포함
+// ❌ 지양: 컴포넌트에 API 로직 직접 포함
 const TodoItem = () => {
   const handleDelete = async () => {
     const res = await fetch(`/api/todos/${id}`, { method: "DELETE" });
@@ -149,7 +154,7 @@ const TodoItem = () => {
   };
 };
 
-// ✅ 좋은 예: API 로직 분리
+// ✅ 개선: API 로직 분리
 // src/lib/api.ts
 export const deleteTodo = async (id: string) => {
   const response = await fetch(`${API_BASE_URL}/${TENANT_ID}/items/${id}`, {
@@ -244,7 +249,40 @@ if (isLoading) {
 - 모바일 우선 (Mobile-First)
 - Tailwind의 `lg:` prefix 활용 (1024px 기준)
 
-### 4. 상세 페이지 동적 라우팅
+### 4. 통합 페이지네이션 시스템
+
+```typescript
+// src/app/page.tsx - 균등한 페이지네이션 구현
+const [currentPage, setCurrentPage] = useState(1);
+const [sectionPageSize] = useState(10); // 각 섹션당 10개씩
+
+// TO DO와 DONE을 분리하고 정렬
+const allIncompleteTodos = todos
+  .filter((todo) => !todo.completed)
+  .sort((a, b) => parseInt(b.id) - parseInt(a.id));
+const allCompletedTodos = todos
+  .filter((todo) => todo.completed)
+  .sort((a, b) => parseInt(b.id) - parseInt(a.id));
+
+// 현재 페이지의 TO DO (각 페이지당 10개)
+const todoStartIndex = (currentPage - 1) * sectionPageSize;
+const incompleteTodos = allIncompleteTodos.slice(todoStartIndex, todoStartIndex + sectionPageSize);
+
+// 현재 페이지의 DONE (각 페이지당 10개)
+const doneStartIndex = (currentPage - 1) * sectionPageSize;
+const completedTodos = allCompletedTodos.slice(doneStartIndex, doneStartIndex + sectionPageSize);
+```
+
+**설계 고민 과정:**
+
+- **제약사항**: 백엔드 API에서 `isCompleted` 필터링 엔드포인트가 없음
+- **문제**: 기존 페이지네이션에서 TO DO와 DONE이 섞여서 표시되어 어색함
+- **고민**: 섹션별 페이지네이션 vs 통합 페이지네이션
+- **선택**: 통합 페이지네이션으로 TO DO와 DONE을 동시에 탐색 가능하게 구현
+- **해결**: 클라이언트 사이드에서 `isCompleted` 필드로 분류하는 현실적 접근
+- **트레이드오프**: 전체 데이터 로드로 인한 초기 로딩 시간 vs 페이지 전환 시 빠른 응답
+
+### 5. 상세 페이지 동적 라우팅
 
 ```typescript
 // src/app/items/[id]/page.tsx
@@ -296,7 +334,43 @@ import Image from 'next/image'
 // Next.js가 자동으로 /items/[id] 페이지를 별도 청크로 분리
 ```
 
-### 3. 낙관적 업데이트 (Optimistic Update)
+### 3. 통합 페이지네이션 최적화
+
+```typescript
+// 전체 데이터를 한 번에 로드하여 페이지네이션 처리
+const loadAllTodos = async () => {
+  const allTodos: ApiTodoItem[] = [];
+  let currentPage = 1;
+  let hasMorePages = true;
+
+  while (hasMorePages) {
+    const pageData = await getTodos(currentPage, 20);
+
+    if (pageData.length === 0 || pageData.length < 20) {
+      hasMorePages = false;
+    }
+
+    allTodos.push(...pageData);
+    currentPage++;
+  }
+
+  // 클라이언트에서 TO DO/DONE 분리 및 페이지네이션
+  const allIncompleteTodos = allTodos.filter((todo) => !todo.completed);
+  const allCompletedTodos = allTodos.filter((todo) => todo.completed);
+};
+```
+
+**구현 과정에서의 고민:**
+
+- **초기 접근**: 페이지별 API 호출로 성능 최적화 시도
+- **문제 발견**: TO DO와 DONE이 섞여서 표시되는 UX 문제
+- **백엔드 제약**: `isCompleted` 필터링 API가 없어서 서버 사이드 분류 불가능
+- **해결 방안**: 전체 데이터 로드 후 클라이언트에서 `isCompleted` 필드로 분리
+- **현실적 선택**: 백엔드 수정 없이 프론트엔드에서 해결하는 실용적 접근
+- **단점**: 초기 로딩 시간 증가, 메모리 사용량 증가
+- **장점**: 페이지 전환 시 즉각적인 응답, 일관된 UX, 백엔드 의존성 없음
+
+### 4. 낙관적 업데이트 (Optimistic Update)
 
 ```typescript
 const handleToggleTodo = async (id: string, isCompleted: boolean) => {
@@ -560,11 +634,18 @@ todo-list/
    - 리팩토링 시 타입 에러를 통한 사이드 이펙트 조기 발견
    - API 인터페이스 변경 시 컴파일 타임 검증
 
+4. **제약사항 하에서의 현실적 해결책**
+   - 백엔드 API 제약 상황에서 프론트엔드만으로 해결하는 방법 학습
+   - 클라이언트 사이드 데이터 분류의 장단점 경험
+   - 이상적인 설계와 현실적 제약사항 사이의 균형점 찾기
+   - 백엔드 수정 없이도 사용자 경험을 개선할 수 있는 방법론 습득
+
 ### 아쉬운 점
 
 - 테스트 코드 부재 → 리팩토링 시 불안감
 - 전역 상태 관리 미흡 → 페이지 전환 시 데이터 재로딩
 - 접근성 고려 부족 → 키보드/스크린 리더 사용자 경험 개선 필요
+- 페이지네이션 방식 선택의 어려움 → 각 방식의 장단점을 미리 충분히 고려하지 못함
 
 ---
 

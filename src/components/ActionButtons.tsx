@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { shadows } from "@/styles/shadows";
+import { COMPLETE_BUTTON_CLASSES, DELETE_BUTTON_CLASSES } from "@/styles/button";
 
 interface ActionButtonsProps {
   onEditComplete?: () => void;
@@ -16,17 +17,11 @@ export default function ActionButtons({
   className = "",
 }: ActionButtonsProps) {
   return (
-    <div className={`flex gap-3 ${className}`}>
+    <div className={`flex flex-col sm:flex-row gap-3 ${className}`}>
       {/* 수정 완료 버튼 */}
       <button
         onClick={onEditComplete}
-        className={`
-          flex items-center gap-2 px-6 py-3 rounded-2xl
-          bg-lime-400 hover:bg-lime-500
-          text-slate-900 font-semibold
-          transition-colors duration-200
-          focus:outline-none focus:ring-2 focus:ring-lime-600
-        `}
+        className={COMPLETE_BUTTON_CLASSES}
         style={{ boxShadow: shadows.small }}
       >
         <div className="relative w-5 h-5">
@@ -38,13 +33,7 @@ export default function ActionButtons({
       {/* 삭제하기 버튼 */}
       <button
         onClick={onDelete}
-        className={`
-          flex items-center gap-2 px-6 py-3 rounded-2xl
-          bg-red-500 hover:bg-red-600
-          text-white font-semibold
-          transition-colors duration-200
-          focus:outline-none focus:ring-2 focus:ring-red-600
-        `}
+        className={DELETE_BUTTON_CLASSES}
         style={{ boxShadow: shadows.small }}
       >
         <div className="relative w-5 h-5">
