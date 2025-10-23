@@ -77,14 +77,18 @@ export default function Home() {
   const handleAddTodo = async (text: string) => {
     try {
       const newTodo = await createTodo({ name: text });
+      // 새로운 할일을 배열의 맨 앞에 추가하여 첫 페이지 상단에 표시
       setTodos([
-        ...todos,
         {
           id: newTodo.id.toString(),
           text: newTodo.name,
           completed: newTodo.isCompleted,
         },
+        ...todos,
       ]);
+
+      // 새로운 할일이 추가되면 첫 페이지로 이동
+      setTodoCurrentPage(1);
     } catch (error) {
       console.error("할 일 추가 실패:", error);
       alert("할 일을 추가하는데 실패했습니다.");
